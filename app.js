@@ -25,7 +25,7 @@ const contactContent = "Scelerisque eleifend donec pretium vulputate sapien. Rho
 const app = express();
 
 // Global posts are added to this array as they are composed.
-let posts = [];
+// let posts = [];
 
 app.set('view engine', 'ejs');
 
@@ -39,14 +39,19 @@ const postSchema = {
   content: String
 };
 
-// Post with mongoose.
+// Create a mongoose model based on this schema.
 const Post = mongoose.model("Post", postSchema);
 
 // Render the starting and composed blog summary on home page.
 app.get("/", function (req, res) {
-  res.render("home", { 
-    startingContent: homeStartingContent, 
-    posts: posts,
+
+  // Find all items in posts collection and render it to home.
+  Post.find({})
+    .then(function (posts) {
+      res.render("home", { 
+        startingContent: homeStartingContent, 
+        posts: posts,
+      });
   });
 });
 
@@ -65,45 +70,45 @@ app.get("/compose", function (req, res) {
   res.render("compose");
 });
 
-// Post compose page and gather user input information from compose postTitle & postBody.
+// Post compose page and gather user input information from compose postTitle & postBody. Add new post using Post schema.
 app.post("/compose", function (req, res) {
-  const post = {
+  const post = new Post ({
     title: req.body.postTitle,
     content: req.body.postBody
-  };
+  });
 
-  // Push the post to the posts array.
-  posts.push(post);
+  // Save the post through our compose route and redirecting back into the home route. A message will be displayed in our console when a post is being saved.
+  post.save()
+    .then(function (posted) {
+      console.log("Post successfully added to DB.");
 
-  // Redirect to root/home page.
-  res.redirect("/");
+      // Redirect to root/home page.
+      res.redirect("/");
+    })
+    .catch(function (err) {
+      res.status(400).send("Unable to save post to DB.");
+    });
 
 });
 
-// Checks for post title name. If name exists then renders the full post.
-app.get("/posts/:postName", function (req, res) {
+// Checks for post id name. If name exists then renders the full post.
+app.get("/posts/:postId", function (req, res) {
 
-  // Sets user requested title in url bar to lowercase.
-  const requestedTitle = _.lowerCase(req.params.postName);
+  // Store the Post Id or _id of our created post in variable. Make it lowercase.
+  const requestedPostId = _.lowerCase(req.params.postId);
 
-  // Loops through each post in posts array. Stores post title variable in lowercase. 
-  // Check if storedTitle and requestedTitle match for any post. 
-  // If matched then console log "Found Match!" and go to post.
-  // If doesn't match console log "No Match!"
-  posts.forEach(function (post) {
-    const storedTitle = _.lowerCase(post.title);
-    if (requestedTitle === storedTitle){
-      console.log("Found Match!");
-
-      // This renders the post title & content on the post page if a match exists.
+  // Using the findOne() method and promises (.then and .catch), we render the post into the designated page.
+  Post.findOne({_id:requestedPostId})
+    .then(function (post) {
       res.render("post", {
         title: post.title,
         content: post.content
         });
-    } else {
-      console.log("No Match!");
-    };
-  });
+    })
+    .catch(function (err){
+      console.log(err);
+    })
+
 });
 
 
