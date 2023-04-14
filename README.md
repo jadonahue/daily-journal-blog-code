@@ -28,8 +28,6 @@
   <img src="public/images/composed-post-page.png">
 </p>
 
-composed-post-page
-
 ---
 
 <h2>Compose Post<h2>
