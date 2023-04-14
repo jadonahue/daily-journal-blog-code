@@ -55,16 +55,6 @@ app.get("/", function (req, res) {
   });
 });
 
-// Render about page with about content.
-app.get("/about", function (req, res) {
-  res.render("about", { aboutContent: aboutContent });
-});
-
-// Render contact page with contact info.
-app.get("/contact", function (req, res) {
-  res.render("contact", { contactContent: contactContent });
-});
-
 // Render compose page.
 app.get("/compose", function (req, res) {
   res.render("compose");
@@ -79,7 +69,7 @@ app.post("/compose", function (req, res) {
 
   // Save the post through our compose route and redirecting back into the home route. A message will be displayed in our console when a post is being saved.
   post.save()
-    .then(function (posted) {
+    .then(function () {
       console.log("Post successfully added to DB.");
 
       // Redirect to root/home page.
@@ -94,11 +84,11 @@ app.post("/compose", function (req, res) {
 // Checks for post id name. If name exists then renders the full post.
 app.get("/posts/:postId", function (req, res) {
 
-  // Store the Post Id or _id of our created post in variable. Make it lowercase.
-  const requestedPostId = _.lowerCase(req.params.postId);
+  // Store the Post Id or _id of our created post in variable.
+  const requestedPostId = req.params.postId;
 
   // Using the findOne() method and promises (.then and .catch), we render the post into the designated page.
-  Post.findOne({_id:requestedPostId})
+  Post.findOne({_id: requestedPostId})
     .then(function (post) {
       res.render("post", {
         title: post.title,
@@ -111,6 +101,15 @@ app.get("/posts/:postId", function (req, res) {
 
 });
 
+// Render about page with about content.
+app.get("/about", function (req, res) {
+  res.render("about", { aboutContent: aboutContent });
+});
+
+// Render contact page with contact info.
+app.get("/contact", function (req, res) {
+  res.render("contact", { contactContent: contactContent });
+});
 
 app.listen(3000, function () {
   console.log("Server started on port 3000");
